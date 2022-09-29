@@ -89,33 +89,54 @@ window.addEventListener("load", function () {
   class Enemy {}
   class Layer {}
   class Background {}
-  class UI {}
+  class UI {
+    constructor(game) {
+      this.game = game;
+      this.fontSize = 25;
+      this.fontFamily = "Helvetica";
+      this.color = "white";
+    }
+    draw(context) {
+      //   ammo
+      context.fillStyle = this.color;
+      context.font = `${this.fontSize}px ${this.fontFamily}`;
+      context.fillText(parseInt(this.game.fps), 20, 30);
+      for (let i = 0; i < this.game.ammo; i++) {
+        context.fillRect(20 + 5 * i, 50, 3, 20);
+      }
+    }
+  }
   class Game {
     constructor(width, height) {
       this.width = width;
       this.height = height;
       this.player = new Player(this);
       this.input = new InputHandler(this);
+      this.ui = new UI(this);
       this.keys = [];
       this.ammo = 20;
       this.maxAmmo = 50;
       this.ammoTimer = 0;
       this.ammoInterval = 500;
+      this.deltaTime = 16;
     }
     update(deltaTime) {
       this.player.update();
+      this.deltaTime = deltaTime;
       if (this.ammoTimer > this.ammoInterval) {
         if (this.ammo < this.maxAmmo) this.ammo++;
         this.ammoTimer = 0;
+        this.fps = 1000 / this.deltaTime;
       } else {
-        this.ammoTimer += deltaTime;
+        this.ammoTimer += this.deltaTime;
       }
     }
     draw(context) {
       this.player.draw(context);
+      this.ui.draw(context);
     }
   }
-  function calculateAverage(array) {
+  function calculateFPS(array) {
     var total = 0;
     var count = 0;
 
@@ -131,6 +152,7 @@ window.addEventListener("load", function () {
   let lastTime = 0;
   function animate(timeStamp) {
     const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     game.update(deltaTime);
     game.draw(ctx);
